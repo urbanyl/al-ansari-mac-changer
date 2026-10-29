@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Al-Ansari Softwares logo">
+  <rect width="256" height="256" fill="#1A2BE8"/>
+  <path d="M 46 46 L 210 46 L 210 210 L 46 210 L 46 102 L 159 102 L 159 159 L 102 159"
+        fill="none" stroke="#FFFFFF" stroke-width="25.6"
+        stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

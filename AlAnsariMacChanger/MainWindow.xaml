@@ -1,0 +1,556 @@
+﻿<Window x:Class="AlAnsariMacChanger.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:AlAnsariMacChanger.ViewModels"
+        Title="Al-Ansari MAC Changer v1.0 - MAC Address &amp; Identity Changer"
+        Width="1020" Height="800"
+        MinWidth="960" MinHeight="710"
+        WindowStartupLocation="CenterScreen"
+        Icon="Assets/app.ico"
+        Background="{x:Static SystemColors.ControlBrush}"
+        FontFamily="Segoe UI"
+        FontSize="12">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <DockPanel>
+
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Refresh" Command="{Binding RefreshCommand}" InputGestureText="F5" />
+                <Separator />
+                <MenuItem Header="E_xit" Click="Exit_Click" />
+            </MenuItem>
+            <MenuItem Header="_Actions">
+                <MenuItem Header="Apply MAC _address" Command="{Binding ApplyCommand}" />
+                <MenuItem Header="_Restore original address" Command="{Binding RestoreCommand}" />
+                <MenuItem Header="Restore _all addresses" Command="{Binding RestoreAllCommand}" />
+                <MenuItem Header="S_huffle all adapters" Command="{Binding RandomizeAllCommand}" />
+                <Separator />
+                <MenuItem Header="_Generate full identity" Command="{Binding GenerateIdentityCommand}" />
+                <MenuItem Header="Restore _identity" Command="{Binding RestoreIdentityCommand}" />
+                <MenuItem Header="Restore _everything" Command="{Binding RestoreEverythingCommand}" />
+                <Separator />
+                <MenuItem Header="Restart _Windows" Command="{Binding RebootCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Options">
+                <MenuItem Header="Restart the connection automatically"
+                          IsCheckable="True"
+                          IsChecked="{Binding AutoRestart}" />
+                <MenuItem Header="Force 02 as the first octet"
+                          IsCheckable="True"
+                          IsChecked="{Binding UseZeroTwo}" />
+                <Separator />
+                <MenuItem Header="Show virtual adapters"
+                          IsCheckable="True"
+                          IsChecked="{Binding ShowVirtualAdapters}" />
+                <MenuItem Header="Open backup folder"
+                          Command="{Binding OpenBackupFolderCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="About_Click" />
+            </MenuItem>
+        </Menu>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Received: " />
+                    <TextBlock Text="{Binding SelectedAdapter.ReceivedText, FallbackValue=—, TargetNullValue=—}" />
+                    <TextBlock Text="   Sent: " />
+                    <TextBlock Text="{Binding SelectedAdapter.SentText, FallbackValue=—, TargetNullValue=—}" />
+                    <TextBlock Text="   Link speed: " />
+                    <TextBlock Text="{Binding SelectedAdapter.SpeedText, FallbackValue=—, TargetNullValue=—}" />
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <GroupBox Grid.Row="0" Header="Network adapters" Padding="4">
+                <ListView Height="150"
+                          ItemsSource="{Binding Adapters}"
+                          SelectedItem="{Binding SelectedAdapter, Mode=TwoWay}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Connection" Width="180" DisplayMemberBinding="{Binding Name}" />
+                            <GridViewColumn Header="Modified" Width="60" DisplayMemberBinding="{Binding ChangedText}" />
+                            <GridViewColumn Header="MAC address" Width="120" DisplayMemberBinding="{Binding MacAddress}" />
+                            <GridViewColumn Header="Link status" Width="95" DisplayMemberBinding="{Binding LinkStatus}" />
+                            <GridViewColumn Header="Speed" Width="70" DisplayMemberBinding="{Binding SpeedText}" />
+                            <GridViewColumn Header="Device" Width="330" DisplayMemberBinding="{Binding Description}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </GroupBox>
+
+            <TabControl Grid.Row="1" Margin="0,8,0,0">
+
+                <!-- ================= ADAPTERS ================= -->
+                <TabItem Header="Adapters">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <GroupBox Grid.Column="0" Grid.RowSpan="2" Header="Connection details" Padding="10" Margin="0,0,8,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Connection:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedAdapter.Name, TargetNullValue=—}" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Device:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAdapter.Description, TargetNullValue=—}" TextWrapping="Wrap" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Hardware ID:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAdapter.HardwareId, TargetNullValue=—}"
+                                           ToolTip="{Binding SelectedAdapter.HardwareId}"
+                                           FontFamily="Consolas" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Config ID:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedAdapter.ConfigId, TargetNullValue=—}"
+                                           FontFamily="Consolas" FontSize="11" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Original MAC:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedAdapter.OriginalMac, TargetNullValue=—}"
+                                           FontFamily="Consolas" FontSize="11" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Active MAC:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedAdapter.MacAddress, TargetNullValue=—}"
+                                           FontFamily="Consolas" FontSize="11" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Current DNS:" FontWeight="Bold" Margin="0,0,0,6" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CurrentDnsText}" TextWrapping="Wrap" Margin="0,0,0,6" />
+
+                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Device status:" FontWeight="Bold" />
+                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedAdapter.LinkStatus, TargetNullValue=—}" />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="1" Grid.Row="0" Header="Change MAC address" Padding="10" Width="410" HorizontalAlignment="Right">
+                            <StackPanel>
+                                <TextBlock Text="MAC address:" FontWeight="Bold" Margin="0,0,0,4" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="Mac1" Width="40" Height="24" MaxLength="2" TextAlignment="Center"
+                                             FontFamily="Consolas" VerticalContentAlignment="Center"
+                                             Text="{Binding Octet1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="-" VerticalAlignment="Center" Margin="4,0" />
+                                    <TextBox x:Name="Mac2" Width="40" Height="24" MaxLength="2" TextAlignment="Center"
+                                             FontFamily="Consolas" VerticalContentAlignment="Center"
+                                             Text="{Binding Octet2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="-" VerticalAlignment="Center" Margin="4,0" />
+                                    <TextBox x:Name="Mac3" Width="40" Height="24" MaxLength="2" TextAlignment="Center"
+                                             FontFamily="Consolas" VerticalContentAlignment="Center"
+                                             Text="{Binding Octet3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="-" VerticalAlignment="Center" Margin="4,0" />
+                                    <TextBox x:Name="Mac4" Width="40" Height="24" MaxLength="2" TextAlignment="Center"
+                                             FontFamily="Consolas" VerticalContentAlignment="Center"
+                                             Text="{Binding Octet4, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="-" VerticalAlignment="Center" Margin="4,0" />
+                                    <TextBox x:Name="Mac5" Width="40" Height="24" MaxLength="2" TextAlignment="Center"
+                                             FontFamily="Consolas" VerticalContentAlignment="Center"
+                                             Text="{Binding Octet5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="-" VerticalAlignment="Center" Margin="4,0" />
+                                    <TextBox x:Name="Mac6" Width="40" Height="24" MaxLength="2" TextAlignment="Center"
+                                             FontFamily="Consolas" VerticalContentAlignment="Center"
+                                             Text="{Binding Octet6, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox Grid.Column="0" Height="24"
+                                              ItemsSource="{Binding Presets}"
+                                              SelectedItem="{Binding SelectedPreset, Mode=TwoWay}" />
+                                    <Button Grid.Column="1" Content="Random address" Padding="10,2" Margin="6,0,0,0"
+                                            Command="{Binding RandomCommand}" />
+                                </Grid>
+
+                                <CheckBox Content="Restart the connection after the change"
+                                          IsChecked="{Binding AutoRestart}" Margin="0,10,0,0" />
+                                <CheckBox Content="Force 02 as the first octet (locally administered)"
+                                          IsChecked="{Binding UseZeroTwo}" Margin="0,6,0,0" />
+                                <CheckBox Content="Show virtual adapters"
+                                          IsChecked="{Binding ShowVirtualAdapters}" Margin="0,6,0,0" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button Content="Apply now" Padding="14,4" Command="{Binding ApplyCommand}" />
+                                    <Button Content="Restore original" Padding="14,4" Margin="6,0,0,0" Command="{Binding RestoreCommand}" />
+                                    <Button Content="Shuffle all" Padding="14,4" Margin="6,0,0,0" Command="{Binding RandomizeAllCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="1" Grid.Row="1" Header="Statistics" Padding="10" Width="410"
+                                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,8,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="95" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Received:" FontWeight="Bold" Margin="0,0,0,4" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedAdapter.ReceivedText, FallbackValue=—, TargetNullValue=—}" Margin="0,0,0,4" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Sent:" FontWeight="Bold" Margin="0,0,0,4" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAdapter.SentText, FallbackValue=—, TargetNullValue=—}" Margin="0,0,0,4" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Link speed:" FontWeight="Bold" Margin="0,0,0,4" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAdapter.SpeedText, FallbackValue=—, TargetNullValue=—}" Margin="0,0,0,4" />
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" FontWeight="Bold" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedAdapter.LinkStatus, TargetNullValue=—}" />
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+
+                <!-- ================= IDENTITY ================= -->
+                <TabItem Header="Identity">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="420" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <GroupBox Header="Identity profile" Padding="10">
+                                    <StackPanel>
+                                        <ComboBox Height="24"
+                                                  ItemsSource="{Binding IdentityProfiles}"
+                                                  SelectedItem="{Binding SelectedIdentityProfile, Mode=TwoWay}" />
+                                        <TextBlock Text="{Binding ProfileDescription}"
+                                                   Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                                   TextWrapping="Wrap" Margin="0,6,0,0" />
+                                        <Button Content="Load profile" Padding="14,4" HorizontalAlignment="Left"
+                                                Margin="0,8,0,0" Command="{Binding ApplyIdentityProfileCommand}" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox Header="Computer name (NetBIOS / DNS)" Padding="10" Margin="0,8,0,0">
+                                    <StackPanel>
+                                        <TextBlock>
+                                            <Run Text="Current name: " FontWeight="Bold" /><Run Text="{Binding ComputerNameCurrent, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <TextBox Width="170" Height="24" VerticalContentAlignment="Center"
+                                                     Text="{Binding NewComputerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <ComboBox Width="160" Height="24" Margin="6,0,0,0"
+                                                      ItemsSource="{Binding HostnameStyles}"
+                                                      SelectedItem="{Binding SelectedHostnameStyle, Mode=TwoWay}" />
+                                            <Button Content="Generate" Padding="10,2" Margin="6,0,0,0"
+                                                    Command="{Binding GenerateHostnameCommand}" />
+                                        </StackPanel>
+                                        <Button Content="Apply computer name" Padding="14,4" HorizontalAlignment="Left"
+                                                Margin="0,8,0,0" Command="{Binding ApplyHostnameCommand}" />
+                                        <TextBlock Text="15 characters maximum. A restart is required to apply it."
+                                                   Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                                   FontSize="11" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox Header="Workgroup" Padding="10" Margin="0,8,0,0">
+                                    <StackPanel>
+                                        <TextBlock>
+                                            <Run Text="Current workgroup: " FontWeight="Bold" /><Run Text="{Binding WorkgroupCurrent, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <TextBox Width="170" Height="24" VerticalContentAlignment="Center"
+                                                     Text="{Binding NewWorkgroup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <Button Content="Generate" Padding="10,2" Margin="6,0,0,0"
+                                                    Command="{Binding GenerateWorkgroupCommand}" />
+                                            <Button Content="Apply" Padding="14,2" Margin="6,0,0,0"
+                                                    Command="{Binding ApplyWorkgroupCommand}"
+                                                    IsEnabled="{Binding CanChangeWorkgroup}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Refused when the computer is joined to a domain (protects authentication)."
+                                                   Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                                   FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox Header="Network privacy" Padding="10" Margin="0,8,0,0">
+                                    <StackPanel>
+                                        <CheckBox Content="Enable IPv6 temporary addresses (randomized identifiers)"
+                                                  IsChecked="{Binding Ipv6PrivacyEnabled}" />
+                                        <CheckBox Content="Advertising ID enabled"
+                                                  IsChecked="{Binding AdvertisingIdEnabled}" Margin="0,6,0,0" />
+                                        <Button Content="Apply privacy options" Padding="14,4"
+                                                HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                Command="{Binding ApplyPrivacyCommand}" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <GroupBox Header="Full identity generation" Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Text="Components to regenerate:" FontWeight="Bold" Margin="0,0,0,6" />
+                                        <CheckBox Content="MAC addresses of all adapters" IsChecked="{Binding IncludeMac}" />
+                                        <CheckBox Content="Computer name and NetBIOS" IsChecked="{Binding IncludeHostname}" Margin="0,6,0,0" />
+                                        <CheckBox Content="Workgroup" IsChecked="{Binding IncludeWorkgroup}" Margin="0,6,0,0"
+                                                  IsEnabled="{Binding CanChangeWorkgroup}" />
+                                        <CheckBox Content="Machine GUID" IsChecked="{Binding IncludeMachineGuid}" Margin="0,6,0,0" />
+                                        <CheckBox Content="DNS servers" IsChecked="{Binding IncludeDns}" Margin="0,6,0,0" />
+                                        <CheckBox Content="IPv6 privacy" IsChecked="{Binding IncludeIpv6}" Margin="0,6,0,0" />
+                                        <CheckBox Content="Disable advertising ID" IsChecked="{Binding IncludeAdvertising}" Margin="0,6,0,0" />
+
+                                        <Button Content="Generate a new identity" Padding="14,6"
+                                                HorizontalAlignment="Stretch" Margin="0,12,0,0"
+                                                Command="{Binding GenerateIdentityCommand}" />
+
+                                        <TextBlock Text="{Binding RebootRequiredMessage}"
+                                                   Foreground="DarkRed" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+                                        <Button Content="Restart Windows…" Padding="14,4"
+                                                HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                Command="{Binding RebootCommand}" />
+
+                                        <TextBlock Text="Every original value is saved before being changed."
+                                                   Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                                   FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox Header="Preview" Padding="10" Margin="0,8,0,0">
+                                    <StackPanel>
+                                        <Button Content="Generate preview" Padding="14,4" HorizontalAlignment="Left"
+                                                Command="{Binding PreviewIdentityCommand}" />
+                                        <TextBox Text="{Binding PreviewText, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 FontFamily="Consolas"
+                                                 FontSize="11"
+                                                 Height="150"
+                                                 Margin="0,8,0,0"
+                                                 VerticalScrollBarVisibility="Auto"
+                                                 TextWrapping="NoWrap" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox Header="Machine GUID (system identifier)" Padding="10" Margin="0,8,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Current value:" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding MachineGuidCurrent}" FontFamily="Consolas" FontSize="11"
+                                                   TextWrapping="Wrap" Margin="0,2,0,0" />
+                                        <TextBox Height="24" Margin="0,8,0,0" VerticalContentAlignment="Center"
+                                                 FontFamily="Consolas"
+                                                 Text="{Binding NewMachineGuid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <Button Content="Generate" Padding="10,2" Command="{Binding GenerateMachineGuidCommand}" />
+                                            <Button Content="Apply" Padding="14,2" Margin="6,0,0,0" Command="{Binding ApplyMachineGuidCommand}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Some software ties its license to this identifier: a backup is kept for restoration."
+                                                   Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                                   FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ================= MAC GENERATOR ================= -->
+                <TabItem Header="MAC Generator">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="370" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Grid.Column="0" Header="Address type" Padding="10" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Type:" FontWeight="Bold" />
+                                <ComboBox Height="24" Margin="0,4,0,0"
+                                          ItemsSource="{Binding MacTypes}"
+                                          SelectedItem="{Binding SelectedMacType, Mode=TwoWay}" />
+
+                                <TextBlock Text="Vendor (OUI):" FontWeight="Bold" Margin="0,10,0,0" />
+                                <ComboBox Height="24" Margin="0,4,0,0"
+                                          ItemsSource="{Binding Vendors}"
+                                          SelectedItem="{Binding SelectedVendor, Mode=TwoWay}"
+                                          IsEnabled="{Binding IsVendorMode}" />
+
+                                <TextBlock Text="Number of addresses:" FontWeight="Bold" Margin="0,10,0,0" />
+                                <ComboBox Height="24" Width="100" HorizontalAlignment="Left" Margin="0,4,0,0"
+                                          ItemsSource="{Binding CandidateCounts}"
+                                          SelectedItem="{Binding SelectedCandidateCount, Mode=TwoWay}" />
+
+                                <Button Content="Generate addresses" Padding="14,4" HorizontalAlignment="Left"
+                                        Margin="0,12,0,0" Command="{Binding GenerateCandidatesCommand}" />
+
+                                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap"
+                                           Text="Locally administered enables the 02 bit: the driver accepts the address without conflicting with a real vendor." />
+                                <TextBlock Margin="0,8,0,0" TextWrapping="Wrap"
+                                           Text="Vendor OUI uses a real manufacturer prefix with random trailing octets." />
+                                <TextBlock Margin="0,8,0,0" TextWrapping="Wrap"
+                                           Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                           Text="Everything stays reversible: every original address is backed up." />
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="1" Header="Generated addresses" Padding="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <ListBox Grid.Row="0"
+                                         ItemsSource="{Binding Candidates}"
+                                         SelectedItem="{Binding SelectedCandidate, Mode=TwoWay}"
+                                         FontFamily="Consolas"
+                                         FontSize="13" />
+
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button Content="Use in editor" Padding="14,4"
+                                            Command="{Binding UseCandidateCommand}" />
+                                    <Button Content="Copy" Padding="14,4" Margin="6,0,0,0"
+                                            Command="{Binding CopyCandidateCommand}" />
+                                    <Button Content="Apply to all adapters" Padding="14,4" Margin="6,0,0,0"
+                                            Command="{Binding ApplyCandidateAllCommand}" />
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+
+                <!-- ================= DNS ================= -->
+                <TabItem Header="DNS &amp; Network">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="400" />
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Grid.Column="0" Header="DNS servers of the selected adapter" Padding="10" Margin="0,0,8,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Adapter:" FontWeight="Bold" Margin="0,0,0,8" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedAdapter.Name, TargetNullValue=—}" Margin="0,0,0,8" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Current DNS:" FontWeight="Bold" Margin="0,0,0,8" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentDnsText}" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="IPv4:" FontWeight="Bold" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAdapter.IPv4Text, TargetNullValue=—}"
+                                           FontFamily="Consolas" FontSize="11" />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="1" Header="Apply a resolver" Padding="10">
+                            <StackPanel>
+                                <TextBlock Text="Resolver:" FontWeight="Bold" />
+                                <ComboBox Height="24" Margin="0,4,0,0"
+                                          ItemsSource="{Binding DnsPresets}"
+                                          SelectedItem="{Binding SelectedDnsPreset, Mode=TwoWay}" />
+
+                                <CheckBox Content="Apply to all connected adapters"
+                                          IsChecked="{Binding ApplyDnsToAll}" Margin="0,10,0,0" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button Content="Apply DNS" Padding="14,4" Command="{Binding ApplyDnsCommand}" />
+                                    <Button Content="Restore DNS" Padding="14,4" Margin="6,0,0,0" Command="{Binding RestoreDnsCommand}" />
+                                </StackPanel>
+
+                                <TextBlock Text="The original DNS settings are saved before each change (including automatic DHCP mode)."
+                                           Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                           FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0" />
+                            </StackPanel>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+
+                <!-- ================= BACKUP ================= -->
+                <TabItem Header="Backup">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <GroupBox Grid.Row="0" Header="Backup and restore" Padding="10">
+                            <StackPanel>
+                                <TextBlock Text="{Binding BackupSummary}" FontWeight="Bold" />
+                                <TextBlock Text="{Binding BackupFolder}" Foreground="{x:Static SystemColors.GrayTextBrush}"
+                                           FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" />
+
+                                <WrapPanel Margin="0,10,0,0">
+                                    <Button Content="Restore everything" Padding="14,4" Margin="0,0,6,0"
+                                            Command="{Binding RestoreEverythingCommand}" />
+                                    <Button Content="Restore MACs" Padding="14,4" Margin="0,0,6,0"
+                                            Command="{Binding RestoreAllCommand}" />
+                                    <Button Content="Restore identity" Padding="14,4" Margin="0,0,6,0"
+                                            Command="{Binding RestoreIdentityCommand}" />
+                                    <Button Content="Export report" Padding="14,4" Margin="0,0,6,0"
+                                            Command="{Binding ExportReportCommand}" />
+                                    <Button Content="Open folder" Padding="14,4" Margin="0,0,6,0"
+                                            Command="{Binding OpenBackupFolderCommand}" />
+                                    <Button Content="Refresh" Padding="14,4"
+                                            Command="{Binding RefreshBackupCommand}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Grid.Row="1" Header="Change log" Padding="8" Margin="0,8,0,0">
+                            <TextBox Text="{Binding LogText, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     FontFamily="Consolas"
+                                     FontSize="11"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     TextWrapping="NoWrap" />
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DockPanel>
+</Window>
+

@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AssemblyName>AlAnsariMacChanger</AssemblyName>
+    <RootNamespace>AlAnsariMacChanger</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Product>Al-Ansari MAC Changer</Product>
+    <Company>Al-Ansari</Company>
+    <Description>Changeur d'adresse MAC pour Windows</Description>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>Al-Ansari MAC Changer</AssemblyTitle>
+    <Platforms>AnyCPU;x64</Platforms>
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+</Project>
