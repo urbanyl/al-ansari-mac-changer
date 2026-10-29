@@ -14,5 +14,5 @@ First public release of **Al-Ansari MAC Changer**.
 - DNS resolver presets (12 providers) with per-adapter backup and restore.
 - IPv6 temporary addresses and advertising ID controls.
 - Automatic backup store, change journal and report export.
-- Splash screen with the Basmala, tray icon and background mode.
+- Splash screen, tray icon and background mode.
 - Classic Win32-style English UI, no Electron and no external UI framework.

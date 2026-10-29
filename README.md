@@ -49,23 +49,17 @@
 
 Every change is written to a local backup first, so everything can be restored. The app requires administrator rights and keeps running in the notification area when its window is closed.
 
-The startup screen displays the Basmala in Arabic:
-
-> بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-
 ## Screenshots
 
-| Startup | Adapters |
+| Adapters | Identity |
 | --- | --- |
-| ![Startup](docs/screenshots/splash.png) | ![Adapters](docs/screenshots/adapters.png) |
+| ![Adapters](docs/screenshots/adapters.png) | ![Identity](docs/screenshots/identity.png) |
 
-| Identity | MAC generator |
+| MAC generator | DNS and network |
 | --- | --- |
-| ![Identity](docs/screenshots/identity.png) | ![MAC generator](docs/screenshots/generator.png) |
+| ![MAC generator](docs/screenshots/generator.png) | ![DNS](docs/screenshots/dns.png) |
 
-| DNS and network | Backup and log |
-| --- | --- |
-| ![DNS](docs/screenshots/dns.png) | ![Backup](docs/screenshots/backup.png) |
+![Backup and log](docs/screenshots/backup.png)
 
 ## Features
 
@@ -127,7 +121,7 @@ A **preview panel** shows the proposed hostname, GUID, MAC profile, DNS, workgro
 3. Extract the archive anywhere.
 4. Run `AlAnsariMacChanger.exe` and accept the UAC prompt.
 
-The application starts with the Basmala splash screen, then opens the main window. Closing the window keeps the app in the notification area; use **Quit** in the tray menu to exit.
+The application opens with a short splash screen, then the main window. Closing the window keeps the app in the notification area; use **Quit** in the tray menu to exit.
 
 ## Usage
 
@@ -192,7 +186,7 @@ Al-Ansari-Mac-Changer/
 │   ├── Services/           adapters, identity, backup store
 │   ├── ViewModels/         main view model
 │   ├── Assets/             application icon
-│   ├── SplashWindow.*      Basmala splash screen
+│   ├── SplashWindow.*      splash screen
 │   └── MainWindow.*        classic Win32-style UI
 ├── docs/
 │   ├── logo.png / logo.svg
